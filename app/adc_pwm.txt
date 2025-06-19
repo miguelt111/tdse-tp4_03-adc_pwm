@@ -1,0 +1,35 @@
+Usando lo aprendido en los tests de ADC y PWM, se pide implementar un firmware que module el brillo de un LED mediante la lectura de un potenciómetro.
+
+
+Circuito:
+    - Al igual que en el test de ADC se colocó el punto medio del potenciómetro en PA0 y los otros dos en 3V3 y GND
+    - Al igual que en el test de PWM se colocó una resistema de 120 Ω y led blanco entre PA6 y GND
+
+Funcionamiento:
+    - El ADC mide continuamente el valor del potenciómetro.
+    - El valor digitalizado se usa como duty cycle para el canal 1 del temporizador TIM3
+    - El resultado es una señal PWM que controla la intensidad del brillo del LED
+    - Cuanto mayor el valor del potenciómetro, mayor es el ancho del pulso y por tanto mayor el brillo del LED
+
+----------------------------
+Archivo 'task_pwm.c':
+
+1. 'task_pwm_init()'
+   - Inicia el canal 1 del TIM3 en modo PWM
+   - Se ejecuta una sola vez al inicio
+
+2. 'task_pwm_update()'
+   - Se lee el valor del ADC (almacenado en la variable'shared_data->adc_value')
+   - Si hay una conversión completada ('adc_end_of_conversion = true'), actualiza el PWM con el nuevo valor
+   - Se usa 'setPWM()' para actualizar el duty cycle, sin cambiar el periodo.
+
+3. 'setPWM()'
+   - Actualiza directamente el valor del 'compare register' del canal PWM para ajustar el duty cycle.
+
+
+No se modificó 'task_adc.c' ni 'task_dummy.c':
+    - El ADC se configuró de forma automática desde el archivo 'main.c'.
+    El valor leído se gestiona directamente desde una estructura 'shared_data_type', sin utilizar 'task_adc.c'.
+    - El archivo 'task_dummy.c' no se utilizó porque no se requiere ninguna funcionalidad extra para el circuito.
+    
+    Solamente se usaron las tareas estrictamente necesarias para lectura del ADC y generación del PWM.
